@@ -41,7 +41,7 @@ To build a command-line application from scratch using Node js, Inquirer, & MySq
 Read about your license MIT
 
  ## Links 
-Deployed page: https://kaidoll.github.io/EmployeeTracker/
+GitHub page: https://github.com/KaiDoll/EmployeeTracker 
 Walkthrough video: https://drive.google.com/file/d/1Y87OlBbtwojxbMfyKDCyTaw5zvlL0foj/view?usp=sharing  
 
  ## Github 
