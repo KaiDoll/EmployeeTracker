@@ -1,20 +1,18 @@
-
 // Import and require mysql2
 const mysql = require("mysql2");
 const inquirer = require("inquirer");
 
-
 const db = mysql.createConnection(
   {
-    host: "dfkpczjgmpvkugnb.cbetxkdyhwsb.us-east-1.rds.amazonaws.com",
-    user: "mz9h72slj85nwv9r",
-    password: "rjyv972yeyaa9k7p",
-    database: "u2cixlmw0hhhly11",
+    host: "mysql_host",
+    user: "mysql_user",
+    password: "mysql_password",
+    database: "mysqlk_DB",
   },
   console.log(`Connected to the database.`)
 );
 //This function is prompts the first question when logged in the terminal.
-function jobSearch() {
+const jobSearch = () => {
   inquirer
     .prompt(
       //inquirer prompt initiated.
@@ -47,12 +45,11 @@ function jobSearch() {
           break;
         case "quit":
           db.end();
-          return;
       }
     });
-}
+};
 
-function add() {
+const add = () => {
   inquirer
     .prompt(
       //"add" inquirer prompt initiated .
@@ -88,9 +85,9 @@ function add() {
           return jobSearch();
       }
     });
-}
+};
 
-function addDepartment() {
+const addDepartment = () => {
   inquirer
     .prompt(
       //"addDepartment" inquirer prompt initiated .
@@ -109,23 +106,21 @@ function addDepartment() {
         jobSearch();
       });
     });
-}
+};
 
-function addRole() {
-  let depts = []; //empty array to store the names of the departments retrieved from the departments table in the database.
-
+const addRole = () => {
+ 
   const queryDept = `SELECT * FROM department`;
 
   db.query(queryDept, function (err, data) {
     if (err) throw err;
 
-    for (let i = 0; i < data.length; i++) {
-      depts.push({
-        name: data[i].name,
-        value: data[i].id
-      });
-    
-    } //The loop adds each department retrieved from the database to the depts array. At the end of the loop, all the depts retrieved from the database
+    let depts = data.map((department) => ({
+      name: department.name,
+      value: department.id,
+    }));
+
+    //The loop adds each department retrieved from the database to the depts array. At the end of the loop, all the depts retrieved from the database
     //will be stored in the depts array.
 
     inquirer
@@ -159,35 +154,29 @@ function addRole() {
         });
       });
   });
-}
+};
 
-function addEmployee() {
-  let role = []; //empty array to store the new roles retrieved from the role table in the database.
-  let employee = []; //empty array to store the new employees retrieved from the employee table in the database.
-
-  
+const addEmployee = () => {
+ 
   const queryRole = `SELECT * FROM role`;
 
   db.query(queryRole, function (err, data) {
     if (err) throw err;
 
-    for (let i = 0; i < data.length; i++) {
-      role.push({
-        name: data[i].title,
-        value: data[i].id
-      });
-    } //The loop adds each department retrieved from the database to the depts array. At the end of the loop, all the depts retrieved from the database
+    let role = data.map((role) => ({
+      name: role.title,
+      value: role.id,
+    })); //The loop adds each department retrieved from the database to the depts array. At the end of the loop, all the depts retrieved from the database
     //will be stored in the depts array.
     const queryEmployee = `SELECT * FROM employee`;
+
     db.query(queryEmployee, function (err, data) {
       if (err) throw err;
 
-      for (let i = 0; i < data.length; i++) {
-        employee.push({
-          name: data[i].first_name + ' ' + data[i].last_name,
-          value: data[i].id
-        });
-      }
+      let employee = data.map((employee) => ({
+        name: employee.first_name + " " + employee.last_name,
+        value: employee.id,
+      }));
       inquirer
         .prompt([
           //"addRole" inquirer prompt initiated .
@@ -212,7 +201,7 @@ function addEmployee() {
             message: "Who is the employee's manager?",
             choices: employee,
             name: "manager",
-          }, //Code needs fixing
+          }, 
         ])
         .then(function ({ first_name, last_name, title, manager }) {
           //sql query is called to insert new role to the database.
@@ -227,88 +216,85 @@ function addEmployee() {
         });
     });
   });
-}
-//Role id does not update nor does the manager id.
-function update () {
-    inquirer
-      .prompt(
-        //"add" inquirer prompt initiated .
-        {
-          type: "list",
-          message: "What would you like to do?",
-          choices: ["Employee Role"],
-          name: "update",
-        }
-      )
-      .then(function ({ update }) {
-        //User choice. If choose 'department' then initiate addDepartment()
-        switch (update) {
-          case "Employee Role":
-            updateEmployee();
-            break;
-            db.end();
-            return jobSearch();
-        }
-      });
-  }
+};
 
-  function  updateEmployee() {
-  let role = []; //empty array to store the names of updated roles retrieved from the departments table in the database.
-  let employee = []; //empty array to store the names of updated employees retrieved from the departments table in the database.
+const update = () => {
+  inquirer
+    .prompt(
+      //"add" inquirer prompt initiated .
+      {
+        type: "list",
+        message: "What would you like to do?",
+        choices: ["Employee Role"],
+        name: "update",
+      }
+    )
+    .then(function ({ update }) {
+      //User choice. If choose 'department' then initiate addDepartment()
+      switch (update) {
+        case "Employee Role":
+          updateEmployee();
+          break;
+          db.end();
+          return jobSearch();
+      }
+    });
+};
 
+const updateEmployee = () => {
   
   const updateRole = `SELECT * FROM role`;
 
   db.query(updateRole, function (err, data) {
     if (err) throw err;
 
-    for (let i = 0; i < data.length; i++) {
-      role.push({
-        name: data[i].title,
-        value: data[i].id
-      });
-    } //The loop adds each role retrieved from the database to the role array. At the end of the loop, all the role retrieved from the database
+    let role = data.map((role) => ({
+      name: role.title,
+      value: role.id,
+    }));
+    //The loop adds each role retrieved from the database to the role array. At the end of the loop, all the role retrieved from the database
     //will be stored in the role array.
     const updateEmployee = `SELECT * FROM employee`;
+
     db.query(updateEmployee, function (err, data) {
       if (err) throw err;
 
-      for (let i = 0; i < data.length; i++) {
-        employee.push({
-          name: data[i].first_name + ' ' + data[i].last_name,
-          value: data[i].id
-        });
-      }
-    inquirer
-    .prompt([      //"updateEmployee" inquirer prompt initiated .
-      {
-        type: "list",
-        message: "Which employee's role do you want to update?",
-        choices: employee,
-        name: "id",  
-      },
-      {
-        type: "list",
-        message: "Which role do you want to assign the selected employee?",
-        choices: role,
-        name: "title",  
-      },
-    ])
-    .then(function ({ id, title }) {
-      //sql query is called to insert new department to the database.
-      const sql = `UPDATE employee SET role_id = ${title} WHERE id = ${id}`;
-      db.query(sql, (err) => {
-        if (err) throw err;
-        console.log("Added to the database");
+      let employee = data.map((employee) => ({
+        name: employee.first_name + " " + employee.last_name,
+        value: employee.id,
+      }));
 
-        jobSearch();
-      });
+      inquirer
+        .prompt([
+          //"updateEmployee" inquirer prompt initiated .
+          {
+            type: "list",
+            message: "Which employee's role do you want to update?",
+            choices: employee,
+            name: "id",
+          },
+          {
+            type: "list",
+            message: "Which role do you want to assign the selected employee?",
+            choices: role,
+            name: "title",
+          },
+        ])
+        .then(function ({ id, title }) {
+          //sql query is called to insert new department to the database.
+          const sql = `UPDATE employee SET role_id = ${title} WHERE id = ${id}`;
+          db.query(sql, (err) => {
+            if (err) throw err;
+            console.log("Added to the database");
+
+            jobSearch();
+          });
+        });
     });
   });
-});
-}
+};
 
-function view() {
+const view = () => {
   inquirer
     .prompt(
       //"view" inquirer prompt initiated .
@@ -344,48 +330,43 @@ function view() {
           return jobSearch();
       }
     });
-  
-  function viewDepartment() {
-          //sql query is called to insert new department to the database.
-          const sql = `SELECT * FROM department`;
-          db.query(sql, (error, results) => {
-            if (error) throw err;
-            // console.log(results);
-            console.table(results)
-            jobSearch();
-          });
-        
-    }
-  
-  function viewRole() {
-      //sql query is called to insert new department to the database.
-      const sql = `SELECT * FROM role`;
-      db.query(sql, (error, results) => {
-        if (error) throw err;
-        // console.log(results);
-        console.table(results)
-        jobSearch();
-      });
-    
-}
 
-function viewEmployee() {
-  //sql query is called to insert new department to the database.
-  const sql = `SELECT e.id AS 'Employee ID', CONCAT(e.first_name, ' ', e.last_name) AS 'Employee Name', r.title as 'Job Title', d.name AS 'Department', r.salary AS 'Salary',
+  const viewDepartment = () => {
+    //sql query is called to insert new department to the database.
+    const sql = `SELECT * FROM department`;
+    db.query(sql, (error, results) => {
+      if (error) throw err;
+      // console.log(results);
+      console.table(results);
+      jobSearch();
+    });
+  };
+
+  const viewRole = () => {
+    //sql query is called to insert new department to the database.
+    const sql = `SELECT * FROM role`;
+    db.query(sql, (error, results) => {
+      if (error) throw err;
+      // console.log(results);
+      console.table(results);
+      jobSearch();
+    });
+  };
+
+  const viewEmployee = () => {
+    //sql query is called to insert new department to the database.
+    const sql = `SELECT e.id AS 'Employee ID', CONCAT(e.first_name, ' ', e.last_name) AS 'Employee Name', r.title as 'Job Title', d.name AS 'Department', r.salary AS 'Salary',
 	CONCAT(m.first_name, ' ', m.last_name) AS 'Manager Name'
 FROM employee e 
 LEFT JOIN role r ON e.role_id=r.id
 LEFT JOIN department d ON r.department_id=d.id
 LEFT JOIN employee m ON e.manager_id=m.id`;
-  db.query(sql, (error, results) => {
-    if (error) throw err;
-    // console.log(results);
-    console.table(results);
-    jobSearch();
-  });
-
-}
-
-}
+    db.query(sql, (error, results) => {
+      if (error) throw err;
+      // console.log(results);
+      console.table(results);
+      jobSearch();
+    });
+  };
+};
 jobSearch();
-

@@ -21,3 +21,13 @@ INSERT INTO role (title, salary, department_id) VALUES ('${title}', '${salary}',
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
         VALUES ("${first_name}", "${last_name}", ${title}, ${manager}) --Insert new employee in the employee table
 UPDATE employee SET role_id = ${title} WHERE id = ${id}
+
+-- Once the table is created add the seed for this table then add the altered table. 
+ALTER TABLE employee
+   ADD CONSTRAINT self_ref_fk 
+   FOREIGN KEY (manager_id)
+   REFERENCES employee(id)
+;
+-- Altered the table to add self refrencing foreign key. 
+UPDATE employee SET manager_id = NULL WHERE ID IN (3, 7, 8); 
+--Once the table is altered, update the manager to null referencing their ID.

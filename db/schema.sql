@@ -22,12 +22,4 @@ CREATE TABLE employee (
     FOREIGN KEY (role_id) REFERENCES role (id)
     ON DELETE SET NULL
 );
--- Once the table is created add the seed for this table then add the altered table. 
-ALTER TABLE employee
-   ADD CONSTRAINT self_ref_fk 
-   FOREIGN KEY (manager_id)
-   REFERENCES employee(id)
-;
--- Altered the table to add self refrencing foreign key. 
-UPDATE employee SET manager_id = NULL WHERE ID IN (3, 7, 8); 
---Once the table is altered, update the manager to null referencing their ID. 
+ 
