@@ -1,13 +1,8 @@
-const express = require("express");
+
 // Import and require mysql2
 const mysql = require("mysql2");
 const inquirer = require("inquirer");
 
-const PORT = process.env.PORT || 3001;
-const app = express();
-
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
 
 const db = mysql.createConnection(
   {
@@ -125,7 +120,11 @@ function addRole() {
     if (err) throw err;
 
     for (let i = 0; i < data.length; i++) {
-      depts.push(data[i].name);
+      depts.push({
+        name: data[i].name,
+        value: data[i].id
+      });
+    
     } //The loop adds each department retrieved from the database to the depts array. At the end of the loop, all the depts retrieved from the database
     //will be stored in the depts array.
 
@@ -151,7 +150,7 @@ function addRole() {
       ])
       .then(function ({ title, salary, name }) {
         //sql query is called to insert new role to the database.
-        const sql = `INSERT INTO role (title, salary, department_id) VALUES ('${title}', '${salary}', (SELECT id FROM department WHERE NAME = '${name}'));`;
+        const sql = `INSERT INTO role (title, salary, department_id) VALUES ('${title}', '${salary}', ${name});`;
 
         db.query(sql, (err) => {
           if (err) throw err;
@@ -173,7 +172,10 @@ function addEmployee() {
     if (err) throw err;
 
     for (let i = 0; i < data.length; i++) {
-      role.push(data[i].title);
+      role.push({
+        name: data[i].title,
+        value: data[i].id
+      });
     } //The loop adds each department retrieved from the database to the depts array. At the end of the loop, all the depts retrieved from the database
     //will be stored in the depts array.
     const queryEmployee = `SELECT * FROM employee`;
@@ -181,7 +183,10 @@ function addEmployee() {
       if (err) throw err;
 
       for (let i = 0; i < data.length; i++) {
-        employee.push(data[i].first_name);
+        employee.push({
+          name: data[i].first_name + ' ' + data[i].last_name,
+          value: data[i].id
+        });
       }
       inquirer
         .prompt([
@@ -212,11 +217,7 @@ function addEmployee() {
         .then(function ({ first_name, last_name, title, manager }) {
           //sql query is called to insert new role to the database.
           const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id)
-        VALUES ('${first_name}', '${last_name}',(
-            SELECT id FROM role 
-        WHERE title = '${title}'),
-            (SELECT id FROM (SELECT * FROM employee) emp
-        WHERE first_name = SUBSTRING_INDEX('${manager}',' ',1) AND last_name = SUBSTRING_INDEX('${manager}',' ',-1)))`;
+        VALUES ("${first_name}", "${last_name}", ${title}, ${manager})`;
 
           db.query(sql, (err) => {
             if (err) throw err;
@@ -262,7 +263,10 @@ function update () {
     if (err) throw err;
 
     for (let i = 0; i < data.length; i++) {
-      role.push(data[i].title);
+      role.push({
+        name: data[i].title,
+        value: data[i].id
+      });
     } //The loop adds each role retrieved from the database to the role array. At the end of the loop, all the role retrieved from the database
     //will be stored in the role array.
     const updateEmployee = `SELECT * FROM employee`;
@@ -270,7 +274,10 @@ function update () {
       if (err) throw err;
 
       for (let i = 0; i < data.length; i++) {
-        employee.push(data[i].first_name);
+        employee.push({
+          name: data[i].first_name + ' ' + data[i].last_name,
+          value: data[i].id
+        });
       }
     inquirer
     .prompt([      //"updateEmployee" inquirer prompt initiated .
@@ -278,7 +285,7 @@ function update () {
         type: "list",
         message: "Which employee's role do you want to update?",
         choices: employee,
-        name: "first_name",  
+        name: "id",  
       },
       {
         type: "list",
@@ -287,13 +294,13 @@ function update () {
         name: "title",  
       },
     ])
-    .then(function ({ first_name, title }) {
+    .then(function ({ id, title }) {
       //sql query is called to insert new department to the database.
-      const sql = `UPDATE employee SET role_id = (SELECT ID FROM role WHERE title = '${title}')
-      WHERE first_name = SUBSTRING_INDEX('${first_name}',' ',1) AND last_name = SUBSTRING_INDEX('${first_name}',' ',-1)`;
+      const sql = `UPDATE employee SET role_id = ${title} WHERE id = ${id}`;
       db.query(sql, (err) => {
         if (err) throw err;
         console.log("Added to the database");
+
         jobSearch();
       });
     });
@@ -381,6 +388,4 @@ LEFT JOIN employee m ON e.manager_id=m.id`;
 
 }
 jobSearch();
-//
-//
-//
+
